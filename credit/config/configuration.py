@@ -1,6 +1,6 @@
 import sys
 from credit.exception import CreditException
-from credit.entity.config_entity import DataIngestionConfig, DataValidationConfig, \
+from credit.entity import DataIngestionConfig, DataValidationConfig, \
      DataTransformationConfig,ModelTrainerConfig,ModelEvaluationConfig,ModelPusherConfig,\
         TrainingPipelineConfig
 from credit.util import read_yaml_file
@@ -170,7 +170,7 @@ class configuration:
     def get_model_trainer_config(self)->ModelTrainerConfig:
         """This method returns ModelTrainerConfig(tuple) which has values
         "trained_model_file_path"(str): trained model object file path,
-        "base_accuracy"(float): Accuracy above which model will  be accepted ,
+        "base_recall"(float): recall above which model will  be accepted ,
         "model_config_file_path(str): model configuration yaml file path"""
         try:
             artifact_dir = self.training_pipeline_config.artifact_dir
@@ -185,15 +185,15 @@ class configuration:
             trained_model_file_path = os.path.join(model_trainer_artifact_dir,
                                     model_trainer_config_info[MODEL_TRAINER_TRAINED_MODEL_DIR_KEY],
                                     model_trainer_config_info[MODEL_TRAINER_TRAINED_MODEL_FILE_NAME_KEY])
-            #defining base accuracy
-            base_accuracy= model_trainer_config_info[MODEL_TRAINER_BASE_ACCURACY_KEY]
+            #defining base recall
+            base_recall= model_trainer_config_info[MODEL_TRAINER_BASE_RECALL_KEY]
             #creating model config file path
             model_config_file_path=os.path.join(model_trainer_config_info[MODEL_TRAINER_MODEL_CONFIG_DIR_KEY],
                                     model_trainer_config_info[MODEL_TRAINER_MODEL_CONFIG_FILE_NAME_KEY])
             #creating model trainer config
             model_trainer_config = ModelTrainerConfig(
                                 trained_model_file_path=trained_model_file_path,
-                                base_accuracy=base_accuracy,
+                                base_recall=base_recall,
                                 model_config_file_path=model_config_file_path)
             
             logging.info(f"Model trainer config:{model_trainer_config}")
