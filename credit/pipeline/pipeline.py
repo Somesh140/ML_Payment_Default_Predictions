@@ -7,13 +7,13 @@ from credit.exception import CreditException
 from credit.logger import logging
 from credit.entity.artifact_entity import *
 from credit.entity.config_entity import *
-from credit.component.data_ingestion import DataIngestion
-from credit.component.data_validation import DataValidation
-from credit.component.data_transformation import DataTransformation
-from credit.component.model_trainer import ModelTrainer
-from credit.component.model_evaluation import ModelEvaluation
-from credit.component.model_pusher import ModelPusher
-from credit.config.configuration import configuration
+from credit.component import DataIngestion
+from credit.component import DataValidation
+from credit.component import DataTransformation
+from credit.component import ModelTrainer
+from credit.component import ModelEvaluation
+from credit.component import ModelPusher
+from credit.config import configuration
 from credit.util import get_current_timestamp
 from credit.constants import *
 
@@ -73,7 +73,7 @@ class Pipeline(Thread):
 
     def start_model_trainer(self,
                         data_transformation_artifact:DataTransformationArtifact,
-                        )->ModelTrainerArtifact:
+                        )->ModelTrainerArtifactClassifier:
         try:
             model_trainer = ModelTrainer(
                         model_trainer_config=self.config.get_model_trainer_config(),
@@ -85,7 +85,7 @@ class Pipeline(Thread):
 
     def start_model_evaluation(self,data_ingestion_artifact:DataIngestionArtifact,
                             data_validation_artifact:DataValidationArtifact,
-                            model_trainer_artifact:ModelTrainerArtifact
+                            model_trainer_artifact:ModelTrainerArtifactClassifier
                             )->ModelEvaluationArtifact:
         try:
             model_eval =    ModelEvaluation(
@@ -129,7 +129,7 @@ class Pipeline(Thread):
                                             experiment_file_path=Pipeline.experiment_file_path,
                                             is_model_accepted=None,
                                             message="Pipeline has been started",
-                                            accuracy=None)
+                                            recall=None)
 
             logging.info(f":Pipeline experiment: {Pipeline.experiment}")
             self.save_experiment()
@@ -179,7 +179,7 @@ class Pipeline(Thread):
                                              message="Pipeline has been completed.",
                                              experiment_file_path=Pipeline.experiment_file_path,
                                              is_model_accepted=model_evaluation_artifact.is_model_accepted,
-                                             accuracy=model_trainer_artifact.model_accuracy
+                                             recall=model_trainer_artifact.model_recall
                                              )
             logging.info(f"Pipeline experiment: {Pipeline.experiment}")
             self.save_experiment()
