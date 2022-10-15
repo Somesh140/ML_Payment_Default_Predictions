@@ -1,0 +1,1 @@
+from credit.config.configuration import configuration
