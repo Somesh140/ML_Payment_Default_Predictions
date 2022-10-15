@@ -1,8 +1,8 @@
 import sys,os
 from credit.exception import CreditException
 from credit.logger import logging
-from credit.entity.config_entity import DataIngestionConfig
-from credit.entity.artifact_entity import DataIngestionArtifact
+from credit.entity import DataIngestionConfig
+from credit.entity import DataIngestionArtifact
 from zipfile import ZipFile
 from six.moves import urllib
 import shutil
