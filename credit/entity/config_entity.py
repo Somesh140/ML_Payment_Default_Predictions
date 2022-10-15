@@ -12,7 +12,7 @@ DataTransformationConfig = namedtuple("DataTransformationConfig", ["transformed_
                                                                    "preprocessed_object_file_path"])
 
 
-ModelTrainerConfig = namedtuple("ModelTrainerConfig", ["trained_model_file_path","base_accuracy","model_config_file_path"])
+ModelTrainerConfig = namedtuple("ModelTrainerConfig", ["trained_model_file_path","base_recall","model_config_file_path"])
 
 ModelEvaluationConfig = namedtuple("ModelEvaluationConfig", ["model_evaluation_file_path","time_stamp"])
 
@@ -23,4 +23,4 @@ TrainingPipelineConfig = namedtuple("TrainingPipelineConfig", ["artifact_dir"])
 
 Experiment = namedtuple("Experiment",["experiment_id","Initialization_timestamp","artifact_time_stamp",
                         "running_status","start_time","stop_time","execution_time",
-                        "message","experiment_file_path","accuracy","is_model_accepted"])
+                        "message","experiment_file_path","recall","is_model_accepted"])
