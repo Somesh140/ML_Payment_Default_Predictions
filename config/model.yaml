@@ -3,17 +3,20 @@ grid_search:
   module: sklearn.model_selection
   params:
     cv: 5
-    verbose: 2
+    verbose: 3
 model_selection:
   module_0:
     class: LogisticRegression
     module: sklearn.linear_model
     params:
-      fit_intercept: true
+      solver: "saga"
     search_param_grid:
       fit_intercept:
       - true
       - false
+      penalty:
+      - "l1"
+      - "l2"
   module_1:
     class: RandomForestClassifier
     module: sklearn.ensemble
@@ -24,6 +27,7 @@ model_selection:
       - 4
       n_estimators:
       - 100
+      - 200
   module_2:
     class: AdaBoostClassifier
     module: sklearn.ensemble
