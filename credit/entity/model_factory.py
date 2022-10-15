@@ -9,7 +9,7 @@ from credit.constants import *
 from collections import namedtuple
 from typing import List
 from credit.logger import logging
-from sklearn.metrics import r2_score,mean_squared_error,accuracy_score,roc_auc_score
+from sklearn.metrics import r2_score,mean_squared_error,accuracy_score,roc_auc_score,recall_score
 
 GRID_SEARCH_KEY = 'grid_search'
 MODULE_KEY = 'module'
@@ -40,7 +40,8 @@ MetricInfoArtifact = namedtuple("MetricInfoArtifact",
 
 MetricInfoArtifactClassifier = namedtuple("MetricInfoArtifactClassifier",
                                 ["model_name", "model_object", "train_roc_auc", "test_roc_auc", "train_accuracy",
-                                 "test_accuracy", "model_accuracy", "index_number"])
+                                 "test_accuracy", "model_accuracy", "index_number",
+                                 "train_recall","test_recall","model_recall"])
 
 
 
@@ -132,7 +133,8 @@ class ModelFactory:
                                                              )
             #Initialising  GridSearchCV estimator and param_grid parameters
             grid_search_cv = grid_search_cv_ref(estimator=initialized_model.model,
-                                                param_grid=initialized_model.param_grid_search)
+                                                param_grid=initialized_model.param_grid_search,
+                                                scoring="recall")
             #updating paramaeters based on property data provided
             grid_search_cv = ModelFactory.update_property_of_class(grid_search_cv,
                                                                    self.grid_search_property_data)
@@ -258,11 +260,11 @@ class ModelFactory:
 
     @staticmethod
     def get_best_model_from_grid_searched_best_model_list(grid_searched_best_model_list: List[GridSearchedBestModel],
-                                                          base_accuracy=0.6
+                                                          base_recall=0.4
                                                           ) -> BestModel:
         """This method takes paramters:
         grid searched best model list(list): list of models with best parameters 
-        base accuracy(float): accuracy  
+        base recall(float): recall_score  
         ==========================================================================
         Returns BestModel 
          "model_serial_number",
@@ -273,26 +275,26 @@ class ModelFactory:
         """
         try:
             best_model = None
-           #for every model in grid searched best model list if best score is greater than base accuracy it is selected
+           #for every model in grid searched best model list if best score is greater than base recall it is selected
             for grid_searched_best_model in grid_searched_best_model_list:
-                if base_accuracy < grid_searched_best_model.best_score:
+                if base_recall < grid_searched_best_model.best_score:
                     logging.info(f"Acceptable model found:{grid_searched_best_model}")
-                   #updating base accuracy
-                    base_accuracy = grid_searched_best_model.best_score
+                   #updating base recall
+                    base_recall = grid_searched_best_model.best_score
                     #selecting best model
                     best_model = grid_searched_best_model
             if not best_model:
-                raise Exception(f"None of Model has base accuracy greater than or equal to: {base_accuracy}")
+                raise Exception(f"None of Model has base recall greater than or equal to: {base_recall}")
             logging.info(f"Best model: {best_model}")
             return best_model
         except Exception as e:
             raise CreditException(e, sys) from e
 
-    def get_best_model(self, X, y,base_accuracy=0.6) -> BestModel:
+    def get_best_model(self, X, y,base_recall=0.4) -> BestModel:
         """ This method require parameters:
         X: Input features array
         y: Target feature array
-        base_accuracy(float):default 0.6
+        base_recall(float):default 0.4
         Returns
         
         "model_serial_number",
@@ -313,12 +315,12 @@ class ModelFactory:
             )
             #return the best model among the grid searched models
             return ModelFactory.get_best_model_from_grid_searched_best_model_list(grid_searched_best_model_list,
-                                                                                  base_accuracy=base_accuracy)
+                                                                                  base_recall=base_recall)
         except Exception as e:
             raise CreditException(e, sys)
 
 
-def evaluate_classification_model(model_list: list, X_train:np.ndarray, y_train:np.ndarray, X_test:np.ndarray, y_test:np.ndarray, base_accuracy:float=0.6)->MetricInfoArtifactClassifier:
+def evaluate_classification_model(model_list: list, X_train:np.ndarray, y_train:np.ndarray, X_test:np.ndarray, y_test:np.ndarray, base_recall:float=0.4)->MetricInfoArtifactClassifier:
     """
     Description:
     This function compare classification models return best model
@@ -332,9 +334,10 @@ def evaluate_classification_model(model_list: list, X_train:np.ndarray, y_train:
     return
     It retured a named tuple
     
-    MetricInfoArtifactClassifier = namedtuple("MetricInfoArtifactClassifier",
+   MetricInfoArtifactClassifier = namedtuple("MetricInfoArtifactClassifier",
                                 ["model_name", "model_object", "train_roc_auc", "test_roc_auc", "train_accuracy",
-                                 "test_accuracy", "model_accuracy", "index_number"])
+                                 "test_accuracy", "model_accuracy", "index_number",
+                                 "train_recall","test_recall","model_recall"])
     """
     try:
         index_number = 0
@@ -359,7 +362,14 @@ def evaluate_classification_model(model_list: list, X_train:np.ndarray, y_train:
             # Calculating harmonic mean of train_accuracy and test_accuracy
             model_accuracy = (2 * (train_acc * test_acc)) / (train_acc + test_acc)
             diff_test_train_acc = abs(test_acc - train_acc)
+
+            #Calculating recall_score on training and testing dataset
+            train_recall = recall_score(y_train, y_train_pred)
+            test_recall = recall_score(y_test, y_test_pred)
             
+            # Calculating harmonic mean of train_recall and test_recall
+            model_recall = (2 * (train_recall * test_recall)) / (train_recall + test_recall)
+
             #logging all important metric
             logging.info(f"{'>>'*30} Score {'<<'*30}")
             logging.info(f"Train Score\t\t Test Score\t\t Average Score")
@@ -370,10 +380,14 @@ def evaluate_classification_model(model_list: list, X_train:np.ndarray, y_train:
             logging.info(f"Train roc_auc_score: [{train_roc_auc}].")
             logging.info(f"Test roc_auc_score: [{test_roc_auc}].")
 
-            #if model accuracy is greater than base accuracy and train and test score is within certain thershold
+            logging.info(f"{'>>'*30} Score {'<<'*30}")
+            logging.info(f"Train recall\t\t Test recall\t\t Average recall")
+            logging.info(f"{train_recall}\t\t {test_recall}\t\t{model_recall}")
+
+            #if model recall is greater than base recall 
             #we will accept that model as accepted model
-            if model_accuracy >= base_accuracy and diff_test_train_acc < 0.05:
-                base_accuracy = model_accuracy
+            if model_recall >= base_recall :
+                base_recall = model_recall
                 metric_info_artifact = MetricInfoArtifactClassifier(model_name=model_name,
                                                         model_object=model,
                                                         train_roc_auc=train_roc_auc,
@@ -381,11 +395,14 @@ def evaluate_classification_model(model_list: list, X_train:np.ndarray, y_train:
                                                         train_accuracy=train_acc,
                                                         test_accuracy=test_acc,
                                                         model_accuracy=model_accuracy,
-                                                        index_number=index_number)
+                                                        index_number=index_number,
+                                                        train_recall=train_recall,
+                                                        test_recall=test_recall,
+                                                        model_recall=model_recall)
                 logging.info(f"Acceptable model found {metric_info_artifact}. ")
             index_number += 1
         if metric_info_artifact is None:
-            logging.info(f"No model found with higher accuracy than base accuracy")
+            logging.info(f"No model found with higher recall than base recall_score")
         return metric_info_artifact
 
 
