@@ -2,7 +2,7 @@ from setuptools import setup,find_packages
 from typing import List
 #Declaring varibales for the setup function
 PROJECT_NAME="Credict_default_predictor"
-VERSION="0.0.1"
+VERSION="2.0.1"
 AUTHOR="SOMESH_TRIVEDI"
 DESCRIPTION= "MACHINE LEARNING PROJECT TO PREDICT CREDIT DEFAULTER"
 

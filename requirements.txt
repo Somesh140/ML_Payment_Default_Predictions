@@ -8,4 +8,5 @@ evidently
 dill
 six
 matplotlib
+Notebook
 -e .

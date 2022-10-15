@@ -5,11 +5,12 @@ __pycache__/
 
 # C extensions
 *.so
+*.vscode
 
 # Distribution / packaging
 .Python
 credit/artifact
-saved_models/
+
 Notebook/code_check.ipynb
 build/
 develop-eggs/
