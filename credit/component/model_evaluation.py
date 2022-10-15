@@ -7,7 +7,7 @@ import numpy as np
 from credit.util import load_data, load_object, read_yaml_file,save_object, write_yaml_file
 from credit.entity.config_entity import ModelEvaluationConfig
 from credit.entity.artifact_entity import DataIngestionArtifact,DataValidationArtifact,\
-     ModelEvaluationArtifact, ModelTrainerArtifact
+     ModelEvaluationArtifact, ModelTrainerArtifactClassifier
 from credit.constants import *
 
 
@@ -16,7 +16,7 @@ class ModelEvaluation:
     def __init__(self,model_evaluation_config:ModelEvaluationConfig,
                 data_ingestion_artifact:DataIngestionArtifact,
                 data_validation_artifact:DataValidationArtifact,
-                model_trainer_artifact:ModelTrainerArtifact) :
+                model_trainer_artifact:ModelTrainerArtifactClassifier) :
         try:
             logging.info(f"\n\n{'>>'*20}Model Evaluation log started.{'<<'*30}")
             self.model_evaluation_config = model_evaluation_config
@@ -147,7 +147,7 @@ class ModelEvaluation:
                                                 y_train=train_target_arr,
                                                 X_test=test_dataframe,
                                                 y_test=test_target_arr,
-                                                base_accuracy=self.model_trainer_artifact.model_accuracy
+                                                base_recall=self.model_trainer_artifact.model_recall
                                                 )    
             logging.info(f"Model evaluation completed. Model metric artifact:{metric_info_artifact}")
             
