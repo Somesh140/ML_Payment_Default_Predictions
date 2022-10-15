@@ -1,13 +1,13 @@
 from typing import List
 
 from sklearn import preprocessing
-from credit.entity.model_factory import GridSearchedBestModel, MetricInfoArtifact, MetricInfoArtifactClassifier,\
+from credit.entity import GridSearchedBestModel, MetricInfoArtifact, MetricInfoArtifactClassifier,\
      ModelFactory, evaluate_regression_model,evaluate_classification_model
 from credit.exception import CreditException
 import os,sys
 from credit.logger import logging
 from credit.entity.config_entity import DataTransformationConfig,ModelTrainerConfig
-from credit.entity.artifact_entity import DataTransformationArtifact,ModelTrainerArtifact, ModelTrainerArtifactClassifier
+from credit.entity.artifact_entity import DataTransformationArtifact, ModelTrainerArtifactClassifier
 import numpy as np
 import pandas as pd
 from credit.util import load_object,save_object,load_numpy_array_data
@@ -70,7 +70,10 @@ class ModelTrainer:
             "test_roc_auc"(float): roc_auc_score on testing dataset, 
             "train_accuracy"(float):accuracy score on train dataset , 
             "test_accuracy"(float): accuracy score on test dataset,
-            "model_accuracy"(float):Harmonic mean of train and test accuracy """
+            "model_accuracy"(float):Harmonic mean of train and test accuracy 
+             "train_recall"(float):recall score on train dataset , 
+            "test_recall"(float): recall score on test dataset,
+            "model_recall"(float):Harmonic mean of train and test recall"""
         
         try:
             #Loading transformed training dataset
@@ -90,12 +93,12 @@ class ModelTrainer:
             #Initialising model factory class using  model config file
             logging.info(f"Initialising model factory class using above model config file:{model_config_file_path}")
             model_factory = ModelFactory(model_config_path=model_config_file_path)
-            #loading base accuracy from config file
-            base_accuracy = self.model_trainer_config.base_accuracy
-            logging.info(f"Expected accuracy:{base_accuracy}")
+            #loading base recall from config file
+            base_recall = self.model_trainer_config.base_recall
+            logging.info(f"Expected recall:{base_recall}")
 
             logging.info(f"Initiating operation model selection")
-            best_model= model_factory.get_best_model(X=x_train,y=y_train,base_accuracy=base_accuracy)
+            best_model= model_factory.get_best_model(X=x_train,y=y_train,base_recall=base_recall)
 
             logging.info(f"Best model found on training dataset:{best_model}")
 
@@ -135,7 +138,10 @@ class ModelTrainer:
                                     test_roc_auc=metric_info.test_roc_auc,
                                     train_accuracy = metric_info.train_accuracy,
                                     test_accuracy = metric_info.test_accuracy,
-                                    model_accuracy = metric_info.model_accuracy)
+                                    model_accuracy = metric_info.model_accuracy,
+                                    train_recall=metric_info.train_recall,
+                                    test_recall=metric_info.test_recall,
+                                    model_recall=metric_info.model_recall)
 
             logging.info(f"Model Trainer Artifact:{model_trainer_artifact_c}")
             return model_trainer_artifact_c
